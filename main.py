@@ -1,6 +1,18 @@
+from database.create_db import criar_tabelas
+
+def main():
+
+    criar_tabelas()
+
+    print("Banco e tabelas criados com sucesso!")
+
+if __name__ == "__main__":
+    main()
+    
+'''
 import flet as ft
 import asyncio
-from backend import BancoDados
+from backend
 from plyer import notification
 import flet_charts as charts
 
@@ -166,3 +178,4 @@ async def main(page: ft.Page):
 if __name__ == "__main__":
     # CORREÇÃO 3: Usando run()
     ft.run(main)
+'''
