@@ -1,15 +1,13 @@
 import mysql.connector
-import os
-from dotenv import load_dotenv
 
-load_dotenv()
-
-def conectar():
-    conn = mysql.connector.connect(
-        host=os.getenv("DB_HOST"),
-        user=os.getenv("DB_USER"),
-        password=os.getenv("DB_PASSWORD"),
-        database=os.getenv("DB_NAME")
-    )
-
+def conectar(database="antiproc"):
+    config = {
+        "host": "localhost",
+        "user": "root",
+        "password": ""
+    }
+    if database:
+        config["database"] = database
+        
+    conn = mysql.connector.connect(**config)
     return conn

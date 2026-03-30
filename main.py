@@ -1,25 +1,20 @@
-from database.create_db import criar_tabelas
-
-def main():
-
-    criar_tabelas()
-
-    print("Banco e tabelas criados com sucesso!")
-
-if __name__ == "__main__":
-    main()
-    
-'''
 import flet as ft
 import asyncio
-from backend
 from plyer import notification
 import flet_charts as charts
 
-# Conecta ao banco de dados
-db = BancoDados()
+# Importações internas do seu projeto
+from database.create_db import criar_tabelas
+from database.banco_dados import BancoDados
+
+def inicializar_banco():
+    criar_tabelas()
 
 async def main(page: ft.Page):
+    # Configura o banco na inicialização do app Flet
+    inicializar_banco()
+    db = BancoDados()
+
     # --- CONFIGURAÇÕES DA PÁGINA ---
     page.title = "Antiprocrastinador Tech"
     page.theme_mode = ft.ThemeMode.DARK
@@ -43,6 +38,7 @@ async def main(page: ft.Page):
         rows=[]
     )
 
+    # Substituindo bibliotecas externas por componentes nativos modernos do Flet
     grafico = charts.PieChart(
         sections=[],
         sections_space=2,
@@ -78,7 +74,7 @@ async def main(page: ft.Page):
                 
                 grafico.sections.append(
                     charts.PieChartSection(
-                        value=total,
+                        value=float(total),
                         title=f"{tech}\n{total}m",
                         title_style=ft.TextStyle(size=10, weight="bold", color=ft.Colors.WHITE),
                         color=cor,
@@ -94,7 +90,7 @@ async def main(page: ft.Page):
         try:
             if not txt_tarefa.value or not txt_tech.value:
                 page.snack_bar = ft.SnackBar(ft.Text("Preencha a tarefa e a tecnologia!"))
-                page.snack_bar.open = True
+                page.open(page.snack_bar)
                 page.update()
                 return
 
@@ -116,6 +112,7 @@ async def main(page: ft.Page):
                 await asyncio.sleep(1)
                 segundos -= 1
 
+            # Salva o progresso quando bate 00:00
             db.salvar_progresso(txt_tarefa.value, txt_tech.value, minutos_foco)
             
             try:
@@ -127,6 +124,7 @@ async def main(page: ft.Page):
             txt_tarefa.disabled = False
             txt_tech.disabled = False
             txt_minutos.disabled = False
+            page.title = "Antiprocrastinador Tech"
             page.update()
             atualizar_dashboard()
 
@@ -134,8 +132,7 @@ async def main(page: ft.Page):
             txt_minutos.error_text = "Número inválido"
             page.update()
 
-    # CORREÇÃO 1: ElevatedButton -> Button
-    btn_iniciar = ft.Button(
+    btn_iniciar = ft.ElevatedButton(
         "INICIAR CICLO FOCO", 
         icon=ft.Icons.PLAY_ARROW_ROUNDED,
         on_click=iniciar_foco,
@@ -152,11 +149,10 @@ async def main(page: ft.Page):
             txt_tarefa,
             ft.Row([txt_tech, txt_minutos], spacing=10),
             
-            # CORREÇÃO 2: Sintaxe de alinhamento atualizada
             ft.Container(
                 content=lbl_timer, 
                 padding=30, 
-                alignment=ft.Alignment(0, 0) # Centralizado (x=0, y=0)
+                alignment=ft.Alignment(0, 0) # Centralizado
             ),
             
             btn_iniciar,
@@ -176,6 +172,4 @@ async def main(page: ft.Page):
     atualizar_dashboard()
 
 if __name__ == "__main__":
-    # CORREÇÃO 3: Usando run()
     ft.run(main)
-'''

@@ -1,0 +1,4 @@
+flet>=0.20.0
+flet_charts
+plyer
+mysql-connector-python
