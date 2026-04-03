@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="popup.css">
+  <title>Antiprocrastinador</title>
+</head>
+<body>
+  <div class="header">
+    <span class="icon">⏳</span>
+    <h1>Antiprocrastinador</h1>
+  </div>
+
+  <div class="container-timer">
+    <div class="timer" id="timerDisplay">00:00</div>
+  </div>
+
+  <button id="btnStart" class="btn-primary">
+    <span class="icon">🚀</span> INICIAR CICLO DE FOCO
+  </button>
+
+  <div class="card">
+    <div class="input-group">
+      <label>O que você vai estudar/fazer?</label>
+      <input type="text" id="txtTarefa" placeholder="Ex: Listas em Python">
+    </div>
+    <div class="row">
+      <div class="input-group">
+        <label>Tecnologia</label>
+        <input type="text" id="txtTech" placeholder="Ex: Python">
+      </div>
+      <div class="input-group min-input">
+        <label>Minutos</label>
+        <input type="number" id="txtMinutos" value="25" min="1" max="120">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="performance-header">
+      <h3>Seu Desempenho</h3>
+      <button id="btnReset" class="btn-icon" title="Zerar Histórico">🗑️</button>
+    </div>
+    <div class="divider"></div>
+    <div class="report-area" id="reportArea">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Tecnologia</th>
+            <th>Minutos</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <!-- Rows loaded dynamically -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

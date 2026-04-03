@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Antiprocrastinador Tech",
+  "version": "1.0.0",
+  "description": "Cronômetro Pomodoro dark premium direto no seu navegador.",
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Antiprocrastinador"
+  },
+  "permissions": [
+    "storage",
+    "notifications"
+  ]
+}
