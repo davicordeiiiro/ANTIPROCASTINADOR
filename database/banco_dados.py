@@ -10,18 +10,18 @@ class BancoDados:
         # Primeiro acha ou cria a tarefa pelo titulo
         cursor = self.conn.cursor()
         
-        cursor.execute("SELECT id FROM tarefas WHERE titulo = %s LIMIT 1", (tarefa_titulo,))
+        cursor.execute("SELECT id FROM tarefas WHERE titulo = ? LIMIT 1", (tarefa_titulo,))
         resultado = cursor.fetchone()
         
         if resultado:
             tarefa_id = resultado[0]
         else:
-            cursor.execute("INSERT INTO tarefas (titulo) VALUES (%s)", (tarefa_titulo,))
+            cursor.execute("INSERT INTO tarefas (titulo) VALUES (?)", (tarefa_titulo,))
             self.conn.commit()
             tarefa_id = cursor.lastrowid
             
         cursor.execute(
-            "INSERT INTO sessoes (tarefa_id, tecnologia, duracao_minutos) VALUES (%s, %s, %s)",
+            "INSERT INTO sessoes (tarefa_id, tecnologia, duracao_minutos) VALUES (?, ?, ?)",
             (tarefa_id, tech, minutos)
         )
         self.conn.commit()
@@ -34,10 +34,11 @@ class BancoDados:
         query = """
         SELECT tecnologia, SUM(duracao_minutos) as total
         FROM sessoes
-        WHERE data >= %s AND tecnologia IS NOT NULL
+        WHERE data >= ? AND tecnologia IS NOT NULL
         GROUP BY tecnologia
         """
-        cursor.execute(query, (ultima_semana,))
+        # Formata a data para string ISO pois o SQLite lida melhor com comparações de string em datas
+        cursor.execute(query, (ultima_semana.strftime('%Y-%m-%d %H:%M:%S'),))
         resultados = cursor.fetchall()
         cursor.close()
         return resultados

@@ -86,16 +86,25 @@ btnStart.addEventListener('click', () => {
     return;
   }
 
+  const sitesRaw = txtSites.value.split('\n');
+  const sites = sitesRaw.map(s => s.trim()).filter(s => s.length > 0);
+
   chrome.runtime.sendMessage({
-    action: 'START_TIMER',
-    tech: tech,
-    mins: mins
-  }, (resp) => {
-    if (resp && resp.success) {
-      backgroundEndTime = resp.endTime;
-      setUiActive(true);
-      startLocalTick();
-    }
+    action: 'SET_SITES',
+    sites: sites
+  }, () => {
+    // Now start timer
+    chrome.runtime.sendMessage({
+      action: 'START_TIMER',
+      tech: tech,
+      mins: mins
+    }, (resp) => {
+      if (resp && resp.success) {
+        backgroundEndTime = resp.endTime;
+        setUiActive(true);
+        startLocalTick();
+      }
+    });
   });
 });
 

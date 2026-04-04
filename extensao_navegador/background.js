@@ -81,8 +81,8 @@ function checkAndBlock(tabId, urlStr) {
   try {
     const url = new URL(urlStr);
     
-    // Do not block extension files or chrome settings
-    if (url.protocol.startsWith('chrome')) return;
+    // Block ONLY http and https. Keep chrome://, edge://, file://, etc safe.
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
 
     const hostname = url.hostname.toLowerCase();
     
