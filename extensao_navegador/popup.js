@@ -1,5 +1,5 @@
-let timerInterval = null;
-let segundosRestantes = 0;
+let localInterval = null;
+let backgroundEndTime = 0;
 
 const timerDisplay = document.getElementById('timerDisplay');
 const btnStart = document.getElementById('btnStart');
@@ -9,21 +9,74 @@ const txtMinutos = document.getElementById('txtMinutos');
 const containerTimer = document.querySelector('.container-timer');
 const btnReset = document.getElementById('btnReset');
 const tableBody = document.getElementById('tableBody');
+const txtSites = document.getElementById('txtSites');
+const btnSaveSites = document.getElementById('btnSaveSites');
 
-// Inicialização e Carga de Dados
 document.addEventListener('DOMContentLoaded', () => {
   carregarRelatorio();
+  syncWithBackground();
 });
 
 function formatTime(secs) {
+  if (secs < 0) secs = 0;
   const m = Math.floor(secs / 60).toString().padStart(2, '0');
-  const s = (secs % 60).toString().padStart(2, '0');
+  const s = (Math.floor(secs) % 60).toString().padStart(2, '0');
   return `${m}:${s}`;
 }
 
-btnStart.addEventListener('click', () => {
-  if (timerInterval) return;
+function syncWithBackground() {
+  chrome.runtime.sendMessage({ action: 'GET_STATE' }, (resp) => {
+    if (resp) {
+      if (resp.endTime > Date.now()) {
+        // Timer is running
+        backgroundEndTime = resp.endTime;
+        setUiActive(true);
+        startLocalTick();
+      }
+      if (resp.allowedSites) {
+        txtSites.value = resp.allowedSites.join('\n');
+      }
+    }
+  });
+}
 
+function setUiActive(isActive) {
+  if (isActive) {
+    btnStart.innerHTML = '<span class="icon">⏳</span> FOCO EM ANDAMENTO';
+    btnStart.classList.add('active');
+    containerTimer.classList.add('active');
+    btnStart.disabled = true;
+    txtTarefa.disabled = true;
+    txtTech.disabled = true;
+    txtMinutos.disabled = true;
+  } else {
+    btnStart.innerHTML = '<span class="icon">🚀</span> INICIAR CICLO DE FOCO';
+    btnStart.classList.remove('active');
+    containerTimer.classList.remove('active');
+    btnStart.disabled = false;
+    txtTarefa.disabled = false;
+    txtTech.disabled = false;
+    txtMinutos.disabled = false;
+    timerDisplay.textContent = '00:00';
+  }
+}
+
+function startLocalTick() {
+  if (localInterval) clearInterval(localInterval);
+  
+  localInterval = setInterval(() => {
+    const restante = (backgroundEndTime - Date.now()) / 1000;
+    if (restante <= 0) {
+      clearInterval(localInterval);
+      setUiActive(false);
+      carregarRelatorio(); // Refresh charts in case focus just ended
+    } else {
+      timerDisplay.textContent = formatTime(restante);
+    }
+  }, 1000);
+}
+
+btnStart.addEventListener('click', () => {
   const tarefa = txtTarefa.value.trim();
   const tech = txtTech.value.trim();
   const mins = parseInt(txtMinutos.value);
@@ -33,65 +86,31 @@ btnStart.addEventListener('click', () => {
     return;
   }
 
-  // Configurações UI estado Inativo -> Iniciando
-  btnStart.innerHTML = '<span class="icon">⏳</span> FOCO EM ANDAMENTO';
-  btnStart.classList.add('active');
-  containerTimer.classList.add('active');
-  btnStart.disabled = true;
-  txtTarefa.disabled = true;
-  txtTech.disabled = true;
-  txtMinutos.disabled = true;
-
-  segundosRestantes = mins * 60;
-  timerDisplay.textContent = formatTime(segundosRestantes);
-
-  timerInterval = setInterval(() => {
-    segundosRestantes--;
-    timerDisplay.textContent = formatTime(segundosRestantes);
-
-    if (segundosRestantes <= 0) {
-      finalizarFoco(tarefa, tech, mins);
+  chrome.runtime.sendMessage({
+    action: 'START_TIMER',
+    tech: tech,
+    mins: mins
+  }, (resp) => {
+    if (resp && resp.success) {
+      backgroundEndTime = resp.endTime;
+      setUiActive(true);
+      startLocalTick();
     }
-  }, 1000);
+  });
 });
 
-function finalizarFoco(tarefa, tech, mins) {
-  clearInterval(timerInterval);
-  timerInterval = null;
-
-  // Salva no Chrome Storage
-  salvarProgresso(tech, mins);
-
-  // Notificação web nativa
-  chrome.notifications.create({
-    type: 'basic',
-    iconUrl: 'icon128.png', // Fallbacks no Manifest mas aceito se ausente internamente
-    title: '🚀 Fim do Ciclo!',
-    message: `Você concluiu ${mins} min em ${tech}.`
+btnSaveSites.addEventListener('click', () => {
+  const sitesRaw = txtSites.value.split('\n');
+  const sites = sitesRaw.map(s => s.trim()).filter(s => s.length > 0);
+  
+  chrome.runtime.sendMessage({
+    action: 'SET_SITES',
+    sites: sites
+  }, () => {
+    btnSaveSites.textContent = '✅';
+    setTimeout(() => { btnSaveSites.textContent = '💾'; }, 2000);
   });
-
-  // Reset UI
-  timerDisplay.textContent = '00:00';
-  btnStart.innerHTML = '<span class="icon">🚀</span> INICIAR CICLO DE FOCO';
-  btnStart.classList.remove('active');
-  containerTimer.classList.remove('active');
-
-  btnStart.disabled = false;
-  txtTarefa.disabled = false;
-  txtTech.disabled = false;
-  txtMinutos.disabled = false;
-}
-
-function salvarProgresso(tech, mins) {
-  chrome.storage.local.get(['historico'], (result) => {
-    let relatorio = result.historico || {};
-    relatorio[tech] = (relatorio[tech] || 0) + mins;
-    
-    chrome.storage.local.set({ historico: relatorio }, () => {
-      carregarRelatorio();
-    });
-  });
-}
+});
 
 function carregarRelatorio() {
   chrome.storage.local.get(['historico'], (result) => {

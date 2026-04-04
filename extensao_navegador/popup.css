@@ -177,3 +177,28 @@ body {
   font-weight: bold;
   color: #00bcd4;
 }
+
+.sites-textarea {
+  width: 100%;
+  min-height: 80px;
+  background-color: #1E232B;
+  border: 1px solid #3949ab;
+  border-radius: 8px;
+  padding: 10px;
+  color: white;
+  font-family: inherit;
+  outline: none;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.sites-textarea:focus {
+  border-color: #651fff;
+}
+
+.hint {
+  font-size: 11px;
+  color: #8b949e;
+  margin-top: 5px;
+  display: block;
+}
